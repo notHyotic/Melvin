@@ -21,6 +21,11 @@ jobs:
         with:
           terraform_version: '1.3.0'
 
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.22.2"
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
