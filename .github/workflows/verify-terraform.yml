@@ -29,5 +29,4 @@ jobs:
           aws-region: 'us-east-1' # specify your region
 
       - name: Terraform
-        working-directory: ./infrastructure/aws
         run: op tfplan
