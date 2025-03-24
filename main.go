@@ -12,9 +12,16 @@ import (
 	"github.com/disgoorg/disgo/discord"
 	"github.com/disgoorg/disgo/events"
 	"github.com/disgoorg/disgo/gateway"
+	"github.com/joho/godotenv"
 )
 
 func main() {
+	// Load .env file
+	err := godotenv.Load()
+	if err != nil {
+		slog.Info("Could not load .env file, will use environment variables.")
+	}
+	
 	slog.Info("starting example...")
 	slog.Info("disgo version", slog.String("version", disgo.Version))
 
