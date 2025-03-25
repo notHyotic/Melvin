@@ -2,67 +2,97 @@ package main
 
 import (
 	"context"
+	"flag"
 	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
-	"github.com/disgoorg/disgo"
 	"github.com/disgoorg/disgo/bot"
-	"github.com/disgoorg/disgo/discord"
-	"github.com/disgoorg/disgo/events"
-	"github.com/disgoorg/disgo/gateway"
-	"github.com/joho/godotenv"
+	"github.com/disgoorg/disgo/handler"
+
+	"github.com/disgoorg/bot-template/bottemplate"
+	"github.com/disgoorg/bot-template/bottemplate/commands"
+	"github.com/disgoorg/bot-template/bottemplate/components"
+	"github.com/disgoorg/bot-template/bottemplate/handlers"
+)
+
+var (
+	Version = "dev"
+	Commit  = "unknown"
 )
 
 func main() {
-	// Load .env file
-	err := godotenv.Load()
+	shouldSyncCommands := flag.Bool("sync-commands", false, "Whether to sync commands to discord")
+	path := flag.String("config", "config.toml", "path to config")
+	flag.Parse()
+
+	cfg, err := bottemplate.LoadConfig(*path)
 	if err != nil {
-		slog.Info("Could not load .env file, will use environment variables.")
-	}
-	
-	slog.Info("starting example...")
-	slog.Info("disgo version", slog.String("version", disgo.Version))
-
-	client, err := disgo.New(os.Getenv("disgo_token"),
-		bot.WithGatewayConfigOpts(
-			gateway.WithIntents(
-				gateway.IntentGuildMessages,
-				gateway.IntentMessageContent,
-			),
-		),
-		bot.WithEventListenerFunc(onMessageCreate),
-	)
-	if err != nil {
-		slog.Error("error while building disgo", slog.Any("err", err))
-		return
+		slog.Error("Failed to read config", slog.Any("err", err))
+		os.Exit(-1)
 	}
 
-	defer client.Close(context.TODO())
+	setupLogger(cfg.Log)
+	slog.Info("Starting bot-template...", slog.String("version", Version), slog.String("commit", Commit))
+	slog.Info("Syncing commands", slog.Bool("sync", *shouldSyncCommands))
 
-	if err = client.OpenGateway(context.TODO()); err != nil {
-		slog.Error("errors while connecting to gateway", slog.Any("err", err))
-		return
+	b := bottemplate.New(*cfg, Version, Commit)
+
+	h := handler.New()
+	h.Command("/test", commands.TestHandler)
+	h.Autocomplete("/test", commands.TestAutocompleteHandler)
+	h.Command("/version", commands.VersionHandler(b))
+	h.Component("/test-button", components.TestComponent)
+
+	if err = b.SetupBot(h, bot.NewListenerFunc(b.OnReady), handlers.MessageHandler(b)); err != nil {
+		slog.Error("Failed to setup bot", slog.Any("err", err))
+		os.Exit(-1)
 	}
 
-	slog.Info("example is now running. Press CTRL-C to exit.")
+	defer func() {
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		b.Client.Close(ctx)
+	}()
+
+	if *shouldSyncCommands {
+		slog.Info("Syncing commands", slog.Any("guild_ids", cfg.Bot.DevGuilds))
+		if err = handler.SyncCommands(b.Client, commands.Commands, cfg.Bot.DevGuilds); err != nil {
+			slog.Error("Failed to sync commands", slog.Any("err", err))
+		}
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	if err = b.Client.OpenGateway(ctx); err != nil {
+		slog.Error("Failed to open gateway", slog.Any("err", err))
+		os.Exit(-1)
+	}
+
+	slog.Info("Bot is running. Press CTRL-C to exit.")
 	s := make(chan os.Signal, 1)
-	signal.Notify(s, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
+	signal.Notify(s, syscall.SIGINT, syscall.SIGTERM)
 	<-s
+	slog.Info("Shutting down bot...")
 }
 
-func onMessageCreate(event *events.MessageCreate) {
-	if event.Message.Author.Bot {
-		return
+func setupLogger(cfg bottemplate.LogConfig) {
+	opts := &slog.HandlerOptions{
+		AddSource: cfg.AddSource,
+		Level:     cfg.Level,
 	}
-	var message string
-	if event.Message.Content == "ping" {
-		message = "pong"
-	} else if event.Message.Content == "pong" {
-		message = "ping"
+
+	var sHandler slog.Handler
+	switch cfg.Format {
+	case "json":
+		sHandler = slog.NewJSONHandler(os.Stdout, opts)
+	case "text":
+		sHandler = slog.NewTextHandler(os.Stdout, opts)
+	default:
+		slog.Error("Unknown log format", slog.String("format", cfg.Format))
+		os.Exit(-1)
 	}
-	if message != "" {
-		_, _ = event.Client().Rest().CreateMessage(event.ChannelID, discord.NewMessageCreateBuilder().SetContent(message).Build())
-	}
+	slog.SetDefault(slog.New(sHandler))
 }
