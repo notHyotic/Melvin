@@ -24,7 +24,7 @@ var (
 )
 
 func main() {
-	shouldSyncCommands := flag.Bool("sync-commands", false, "Whether to sync commands to discord")
+	shouldSyncCommands := flag.Bool("sync-commands", true, "Whether to sync commands to discord")
 	path := flag.String("config", "config.toml", "path to config")
 	flag.Parse()
 
