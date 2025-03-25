@@ -1,4 +1,4 @@
-name: Verify terraform
+name: Verify Infrastructure
 
 on:
   push:
