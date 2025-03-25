@@ -1,7 +1,6 @@
 package bottemplate
 
 import (
-	"fmt"
 	"log/slog"
 	"os"
 
@@ -9,15 +8,30 @@ import (
 	"github.com/pelletier/go-toml/v2"
 )
 
+func DefaultConfig() *Config {
+	return &Config{
+		Log: LogConfig{
+			Level:     slog.LevelInfo, // Default log level
+			Format:    "text",         // Default format
+			AddSource: true,          // Default value
+		},
+		Bot: BotConfig{
+			DevGuilds: []snowflake.ID{},
+			Token:     os.Getenv("DISCORD_TOKEN"),
+		},
+	}
+}
+
 func LoadConfig(path string) (*Config, error) {
 	file, err := os.Open(path)
+
 	if err != nil {
-		return nil, fmt.Errorf("failed to open config: %w", err)
+		return DefaultConfig(), nil
 	}
 
 	var cfg Config
 	if err = toml.NewDecoder(file).Decode(&cfg); err != nil {
-		return nil, err
+		return DefaultConfig(), nil
 	}
 	return &cfg, nil
 }
