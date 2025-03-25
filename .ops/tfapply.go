@@ -23,7 +23,7 @@ func (Ops) Tfapply() {
 		log.Fatal(err)
 	}
 
-	err = rnr.Run("terraform", "apply -auto-approve")
+	err = rnr.Run("terraform", "apply", "-auto-approve")
 	if err != nil {
 		log.Fatal(err)
 	}
