@@ -21,9 +21,9 @@ jobs:
           aws-region: 'us-east-1' # specify your region
 
       - name: Set up Terraform
-        uses: hashicorp/setup-terraform@v1
+        uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: '1.3.0'
+          terraform_version: "latest"
 
       - name: Set up Go
         uses: actions/setup-go@v4
