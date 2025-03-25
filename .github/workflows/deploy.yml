@@ -1,4 +1,4 @@
-name: Upload Docker Image
+name: Deploy to AWS
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
   
 jobs:
-  build-and-upload-docker-image:
+  deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
@@ -20,9 +20,26 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: 'us-east-1' # specify your region
 
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: '1.3.0'
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.22.2"
+
+      - name: Install Op
+        run: go install lesiw.io/op@latest
+
       - name: Upload Docker Image to ECR
         run: |
           aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 915898657279.dkr.ecr.us-east-1.amazonaws.com
           docker build -t melvin .
           docker tag melvin:latest 915898657279.dkr.ecr.us-east-1.amazonaws.com/melvin:latest
           docker push 915898657279.dkr.ecr.us-east-1.amazonaws.com/melvin:latest
+
+      - name: Run Terraform
+        run: |
+          op tfapply
