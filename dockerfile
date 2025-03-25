@@ -29,4 +29,3 @@ RUN chmod +x /app/melvin
 
 # Set the entrypoint and default command
 ENTRYPOINT ["/app/melvin"]
-CMD ["-config", "/var/lib/config.toml"]
