@@ -1,12 +1,11 @@
 package commands
 
 import (
+	"Melvin/bottemplate"
 	"fmt"
 
 	"github.com/disgoorg/disgo/discord"
 	"github.com/disgoorg/disgo/handler"
-
-	"github.com/disgoorg/bot-template/bottemplate"
 )
 
 var version = discord.SlashCommandCreate{

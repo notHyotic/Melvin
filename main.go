@@ -9,13 +9,13 @@ import (
 	"syscall"
 	"time"
 
+	"Melvin/bottemplate"
+	"Melvin/bottemplate/commands"
+	"Melvin/bottemplate/components"
+	"Melvin/bottemplate/handlers"
+
 	"github.com/disgoorg/disgo/bot"
 	"github.com/disgoorg/disgo/handler"
-
-	"github.com/disgoorg/bot-template/bottemplate"
-	"github.com/disgoorg/bot-template/bottemplate/commands"
-	"github.com/disgoorg/bot-template/bottemplate/components"
-	"github.com/disgoorg/bot-template/bottemplate/handlers"
 )
 
 var (
