@@ -1,29 +1,32 @@
-FROM --platform=$BUILDPLATFORM golang:1.22-alpine AS build
+# Stage 1: Build the application
+FROM golang:1.24 AS builder
 
-WORKDIR /build
+WORKDIR /app
 
+# Copy go module files separately to leverage caching
 COPY go.mod go.sum ./
 
+# Download dependencies (cache layer)
 RUN go mod download
 
+# Copy the rest of the source code
 COPY . .
 
-ARG TARGETOS
-ARG TARGETARCH
-ARG VERSION=dev
-ARG COMMIT=unknown
+# Build the Go application as a static binary
+RUN CGO_ENABLED=0 GOOS=linux go build -o /melvin .
 
-RUN --mount=type=cache,target=/root/.cache/go-build \
-    --mount=type=cache,target=/go/pkg \
-    CGO_ENABLED=0 \
-    GOOS=$TARGETOS \
-    GOARCH=$TARGETARCH \
-    go build -ldflags="-X 'main.Version=${VERSION}' -X 'main.Commit=${COMMIT}'" -o bot github.com/disgoorg/bot-template
+# Stage 2: Create a lightweight production image
+FROM alpine:latest
 
-FROM alpine
+# Set working directory
+WORKDIR /app
 
-COPY --from=build /build/bot /bin/bot
+# Copy the built binary from the builder stage
+COPY --from=builder /melvin /app/melvin
 
-ENTRYPOINT ["/bin/bot"]
+# Ensure the binary is executable
+RUN chmod +x /app/melvin
 
+# Set the entrypoint and default command
+ENTRYPOINT ["/app/melvin"]
 CMD ["-config", "/var/lib/config.toml"]
