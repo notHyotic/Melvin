@@ -7,7 +7,6 @@ import (
 	"github.com/disgoorg/disgo/discord"
 	"github.com/disgoorg/disgo/handler"
 	"math/rand"
-	"time"
 )
 
 var random = discord.SlashCommandCreate{
