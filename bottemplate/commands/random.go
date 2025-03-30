@@ -11,7 +11,7 @@ import (
 
 var random = discord.SlashCommandCreate{
 	Name:        "random",
-	Description: "generate a random number from 0 to x",
+	Description: "generate a random number from 0 to x (default is 100)",
 }
 
 func RandomHandler(b *bottemplate.Bot) handler.CommandHandler {
