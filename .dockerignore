@@ -7,3 +7,4 @@ LICENSE
 config.toml
 config.example.toml
 .ops
+note.md
