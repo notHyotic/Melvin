@@ -7,7 +7,6 @@ require github.com/disgoorg/disgo v0.18.15
 require github.com/pelletier/go-toml/v2 v2.2.3
 
 require (
-	github.com/disgoorg/bot-template v0.0.0-20241214191615-fcc95386c08b
 	github.com/disgoorg/json v1.2.0
 	github.com/disgoorg/paginator v0.0.0-20240725182907-1bdf780b5586
 	github.com/disgoorg/snowflake/v2 v2.0.3
