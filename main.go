@@ -45,9 +45,11 @@ func main() {
 	h.Autocomplete("/test", commands.TestAutocompleteHandler)
 	h.Command("/version", commands.VersionHandler(b))
 	h.Component("/test-button", components.TestComponent)
-	h.Command("/random", commands.RandomHandler(b))
+	h.Command("/roll", commands.RollHandler(b))
 
-	if err = b.SetupBot(h, bot.NewListenerFunc(b.OnReady), handlers.MessageHandler(b), handlers.UserJoinVCHandler(b)); err != nil {
+	if err = b.SetupBot(h, bot.NewListenerFunc(b.OnReady),
+		handlers.MessageHandler(b),
+		handlers.UserJoinVCHandler(b)); err != nil {
 		slog.Error("Failed to setup bot", slog.Any("err", err))
 		os.Exit(-1)
 	}
