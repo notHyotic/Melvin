@@ -3,9 +3,10 @@ package commands
 import (
 	"Melvin/bottemplate"
 	"fmt"
+	"math/big"
 	"strconv"
 
-	"math/rand"
+	"crypto/rand"
 
 	"github.com/disgoorg/disgo/discord"
 	"github.com/disgoorg/disgo/handler"
@@ -45,14 +46,29 @@ func RollHandler(b *bottemplate.Bot) handler.CommandHandler {
 			}
 		}
 	
-		roll := generateRandom(0, maxVal)
-
+		roll, err := generateRandom(0, maxVal)
+		if err != nil {
+			fmt.Println("Error:", err)
+			return e.CreateMessage(discord.MessageCreate{
+				Content: err.Error(),
+			})
+		}
 		return e.CreateMessage(discord.MessageCreate{
 			Content: fmt.Sprintf("your roll: %d", roll),
 		})
 	}
 }
 
-func generateRandom(min, max int) int {
-	return rand.Intn(max-min+1) + min
+// generateRandom securely generates a random integer between min and max (inclusive)
+func generateRandom(min, max int) (int, error) {
+	if min > max {
+		return 0, fmt.Errorf("min must be less than or equal to max")
+	}
+
+	n, err := rand.Int(rand.Reader, big.NewInt(int64(max-min+1)))
+	if err != nil {
+		return 0, err
+	}
+
+	return int(n.Int64()) + min, nil
 }
