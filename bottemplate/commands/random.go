@@ -26,6 +26,5 @@ func RandomHandler(b *bottemplate.Bot) handler.CommandHandler {
 }
 
 func generateRandom(min, max int) int {
-	rand.Seed(time.Now().UnixNano()) // Seeds the random number generator
 	return rand.Intn(max-min+1) + min
 }
