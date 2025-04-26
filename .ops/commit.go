@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 
@@ -16,10 +15,10 @@ func (Ops) Commit() {
 
 	defer rnr.Close()
 
-	fmt.Println("Number of arguments:", len(args))
-	for i,v := range args {
-		fmt.Println(i, v)
-	}
+	// fmt.Println("Number of arguments:", len(args))
+	// for i,v := range args {
+	// 	fmt.Println(i, v)
+	// }
 
 	err := rnr.Run("git", "commit", "-m", args[2])
 	if err != nil {
